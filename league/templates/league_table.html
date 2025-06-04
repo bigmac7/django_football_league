@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football League Table</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 80%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>PES Premier League</h1>
+
+    {% if league_table %}
+    <table>
+        <thead>
+            <tr>
+                <th>Pos</th>
+                <th>Team</th>
+                <th>P</th>
+                <th>W</th>
+                <th>D</th>
+                <th>L</th>
+                <th>GF</th>
+                <th>GA</th>
+                <th>GD</th>
+                <th>Pts</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team_data in league_table %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ team_data.team_name }}</td>
+                <td>{{ team_data.played }}</td>
+                <td>{{ team_data.wins }}</td>
+                <td>{{ team_data.draws }}</td>
+                <td>{{ team_data.losses }}</td>
+                <td>{{ team_data.goals_for }}</td>
+                <td>{{ team_data.goals_against }}</td>
+                <td>{{ team_data.goal_difference }}</td>
+                <td><strong>{{ team_data.points }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No teams or matches to display yet.</p>
+    {% endif %}
+</body>
+</html>

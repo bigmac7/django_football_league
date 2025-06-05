@@ -1,9 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
+# league/views.py
 from django.shortcuts import render
 from .models import Team, Match
 from collections import defaultdict
+from django.db.models import Q # Import Q for filtering (optional but good practice)
 
 def league_table(request):
     teams = Team.objects.all()
@@ -14,26 +13,26 @@ def league_table(request):
 
     matches = Match.objects.all()
 
-    for matchy in matches:
-        home_team_stats = team_stats[matchy.home_team.name]
-        away_team_stats = team_stats[matchy.away_team.name]
+    for match in matches:
+        home_team_stats = team_stats[match.home_team.name]
+        away_team_stats = team_stats[match.away_team.name]
 
         # Update played matches
         home_team_stats['played'] += 1
         away_team_stats['played'] += 1
 
         # Update goals
-        home_team_stats['goals_for'] += matchy.home_score
-        home_team_stats['goals_against'] += matchy.away_score
-        away_team_stats['goals_for'] += matchy.away_score
-        away_team_stats['goals_against'] += matchy.home_score
+        home_team_stats['goals_for'] += match.home_score
+        home_team_stats['goals_against'] += match.away_score
+        away_team_stats['goals_for'] += match.away_score
+        away_team_stats['goals_against'] += match.home_score
 
         # Determine outcome and update points/wins/draws/losses
-        if matchy.home_score > matchy.away_score:
+        if match.home_score > match.away_score:
             home_team_stats['wins'] += 1
             home_team_stats['points'] += 3
             away_team_stats['losses'] += 1
-        elif matchy.home_score < matchy.away_score:
+        elif match.home_score < match.away_score:
             away_team_stats['wins'] += 1
             away_team_stats['points'] += 3
             home_team_stats['losses'] += 1
@@ -56,18 +55,19 @@ def league_table(request):
         })
 
     # Sort the table:
-    # 1. By points (descending)
-    # 2. By goal difference (descending)
-    # 3. By goals for (descending)
-    # 4. By team name (ascending - alphabetical tie-breaker)
     sorted_table.sort(key=lambda x: (
         x['points'],
         x['goal_difference'],
         x['goals_for'],
-        x['team_name'] # Final tie-breaker, alphabetically
-    ), reverse=True) # Reverse for points, GD, GF to be descending
+        x['team_name']
+    ), reverse=True)
+
+    # --- New: Get recent fixtures ---
+    # Fetch all matches, ordered by match_date (most recent first) and slice to get the first 5
+    recent_fixtures = Match.objects.all().order_by('-match_date')[:5]
 
     context = {
         'league_table': sorted_table,
+        'recent_fixtures': recent_fixtures, # Add to context
     }
     return render(request, 'league_table.html', context)

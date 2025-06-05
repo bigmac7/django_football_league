@@ -7,6 +7,7 @@
     <title>Football League Table</title>
     {% tailwind_css %}
     <style>
+        /* Custom CSS for gradients or specific details not easily done with pure Tailwind */
         .premier-league-header-bg {
             background-color: #38003c; /* Premier League Purple */
             background-image: linear-gradient(to right, #38003c, #00104f); /* Subtle gradient */
@@ -28,18 +29,21 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #9ca3af; /* Tailwind gray-400 */
         }
+        /* Custom styling for win/loss/draw results (only in team_detail.html) */
+        .match-win { background-color: rgba(0, 150, 0, 0.2); } /* Green for win */
+        .match-loss { background-color: rgba(150, 0, 0, 0.2); } /* Red for loss */
+        .match-draw { background-color: rgba(150, 150, 0, 0.2); } /* Yellow for draw */
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
     <div class="max-w-6xl w-full mx-auto bg-gray-800 rounded-lg shadow-2xl overflow-hidden border border-gray-700">
         <div class="premier-league-header-bg text-white py-4 px-6 sm:px-8 text-center">
             <h1 class="text-3xl sm:text-4xl font-extrabold mb-2 uppercase tracking-wide">
-                Premier League Table & Fixtures
+                EFootball Premier League Table & Fixtures
             </h1>
             <p class="text-sm opacity-80">Season 2024/2025</p>
         </div>
 
-        {# Main content area: Grid for Table and Fixtures #}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
 
             {# League Table Column #}
@@ -72,7 +76,10 @@
                                 {{ forloop.counter }}
                             </td>
                             <td class="px-3 py-3 text-left font-semibold text-base whitespace-nowrap">
-                                {{ team_data.team_name }}
+                                {# Corrected: Use team_data.team_object.id #}
+                                <a href="{% url 'team_detail' team_data.team_object.id %}" class="text-blue-400 hover:text-blue-300 transition-colors duration-150">
+                                    {{ team_data.team_name_str }} {# Display the string name #}
+                                </a>
                             </td>
                             <td class="px-3 py-3 text-center text-sm">{{ team_data.played }}</td>
                             <td class="px-3 py-3 text-center text-sm">{{ team_data.wins }}</td>
@@ -93,16 +100,15 @@
                 {% endif %}
             </div>
 
-            {# Recent Fixtures Column #}
+            {# Recent Fixtures Column (unchanged) #}
             <div class="lg:col-span-1">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-100 mb-4 pb-2 border-b border-gray-700">Recent Fixtures</h2>
                 {% if recent_fixtures %}
-                <div class="space-y-4"> {# Adds vertical space between fixture cards #}
+                <div class="space-y-4">
                     {% for fixture in recent_fixtures %}
                     <div class="bg-gray-700 p-4 rounded-md shadow-md flex flex-col space-y-2 text-gray-200">
                         <div class="flex justify-between items-center text-sm font-semibold text-gray-400">
                             <span>{{ fixture.match_date|date:"F j, Y" }}</span>
-                            {# Optional: add match status, e.g., "Full Time" #}
                             <span class="px-2 py-1 bg-gray-800 rounded-full text-xs uppercase">Full Time</span>
                         </div>
                         <div class="flex items-center justify-between text-lg font-bold">
@@ -120,8 +126,7 @@
                 {% endif %}
             </div>
 
-        </div> {# End of grid container #}
-
+        </div>
     </div>
 </body>
 </html>

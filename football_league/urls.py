@@ -28,4 +28,5 @@ app_name = 'league'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.league_table, name='league_table'),
+    path('team/<int:team_id>/', views.team_detail, name='team_detail'),
 ]

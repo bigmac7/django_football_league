@@ -1,0 +1,25 @@
+# render.yaml
+services:
+  - type: web
+    name: football-league-app
+    env: python
+    buildCommand: "./build.sh" # We'll create this script
+    startCommand: "gunicorn football_league.wsgi:application"
+    healthCheckPath: /admin/login/ # Simple health check to ensure Django is up
+    autoDeploy: true # Auto-deploy on Git push
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///var/data/db.sqlite3 # Path to your SQLite DB on the persistent disk
+      - key: SECRET_KEY # Crucial for production
+        generateValue: true # Render will generate a strong key for you
+      - key: WEB_CONCURRENCY
+        value: 4 # Optional: Adjust based on your instance size and app needs
+      - key: DEBUG
+        value: "False"
+    disks:
+      - name: sqlite-data
+        path: /var/data # Mount point for your persistent disk
+
+# NOTE: Render's free tier web services spin down after 15 mins of inactivity.
+# The first request after spin-down will be slow.
+# Consider upgrading for always-on services.

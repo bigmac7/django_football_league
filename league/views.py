@@ -5,29 +5,42 @@ from collections import defaultdict
 from datetime import date
 from django.db.models import Q
 
-def league_table(request):
-    # Fetch all teams once and store them in a dictionary for easy lookup by name
-    all_teams_by_name = {team.name: team for team in Team.objects.all()}
+# league/views.py
+from django.shortcuts import render, get_object_or_404
+from .models import Team, Match
+# from collections import defaultdict # We'll use a regular dict now for clearer initialization
+from datetime import date
+from django.db.models import Q
 
-    team_stats = defaultdict(lambda: {
-        'played': 0, 'wins': 0, 'draws': 0, 'losses': 0,
-        'goals_for': 0, 'goals_against': 0, 'goal_difference': 0, 'points': 0,
-        'team_object': None # NEW: Add a placeholder for the actual Team object
-    })
+def league_table(request):
+    all_teams = Team.objects.all() # Fetch all teams from the database
+
+    # Initialize team_stats as a regular dictionary.
+    # This ensures every team has an entry from the start, with zero stats.
+    team_stats = {}
+    for team_obj in all_teams:
+        team_stats[team_obj.name] = {
+            'played': 0, 'wins': 0, 'draws': 0, 'losses': 0,
+            'goals_for': 0, 'goals_against': 0, 'goal_difference': 0, 'points': 0,
+            'team_object': team_obj # Crucially, store the actual Team object here
+        }
 
     matches = Match.objects.all()
 
     for match in matches:
-        home_team_obj = match.home_team # These are already Team objects
+        home_team_obj = match.home_team
         away_team_obj = match.away_team
 
-        # Get the stats dicts for home and away teams
-        home_team_stats = team_stats[home_team_obj.name]
-        away_team_stats = team_stats[away_team_obj.name]
+        # Access the stats dictionaries for the home and away teams.
+        # Use .get() with a default in case a team exists in a match but somehow wasn't in all_teams (unlikely with FKs but safer)
+        home_team_stats = team_stats.get(home_team_obj.name)
+        away_team_stats = team_stats.get(away_team_obj.name)
 
-        # Assign the actual Team object to the stats dictionary
-        home_team_stats['team_object'] = home_team_obj
-        away_team_stats['team_object'] = away_team_obj
+        # If for some reason a team in a match wasn't in our initial all_teams list, skip this match.
+        if not home_team_stats or not away_team_stats:
+            continue
+
+        # The 'team_object' is already stored during initialization, no need to re-assign here.
 
         # Update played matches
         home_team_stats['played'] += 1
@@ -55,26 +68,24 @@ def league_table(request):
             away_team_stats['points'] += 1
 
     # Calculate goal difference after all matches processed
-    for team_name_str, stats in team_stats.items(): # Iterating through the defaultdict's items
-        stats['goal_difference'] = stats['goals_for'] - stats['goals_against']
-
-    # Convert defaultdict values (the stats dictionaries) to a list for sorting
-    sorted_table = []
+    # Iterate through the values of team_stats, which are the dictionaries containing stats
     for team_name_str, stats_dict in team_stats.items():
-        # Ensure we're adding the actual Team object and its calculated stats
-        sorted_table.append({
-            'team_object': stats_dict['team_object'], # Access the stored Team object
-            'team_name_str': team_name_str, # Keep the string name for display
-            **stats_dict # Unpack all other stats (played, points, etc.)
-        })
+        stats_dict['goal_difference'] = stats_dict['goals_for'] - stats_dict['goals_against']
+
+    # Convert the dictionary's values (the stats dictionaries) into a list for sorting
+    sorted_table = list(team_stats.values()) # This gets a list of all the stats dictionaries
 
     # Sort the table:
+    # 1. By points (descending)
+    # 2. By goal difference (descending)
+    # 3. By goals for (descending)
+    # 4. By team name (ascending - alphabetical tie-breaker using the Team object's name)
     sorted_table.sort(key=lambda x: (
         x['points'],
         x['goal_difference'],
         x['goals_for'],
-        x['team_name_str'] # Use the string name for tie-breaker if needed
-    ), reverse=True)
+        x['team_object'].name # Use the actual Team object's name for sorting
+    ), reverse=True) # Reverse for points, GD, GF to be descending
 
     recent_fixtures = Match.objects.all().order_by('-match_date')[:5]
 
@@ -82,7 +93,7 @@ def league_table(request):
         'league_table': sorted_table,
         'recent_fixtures': recent_fixtures,
     }
-    return render(request, 'league_table.html', context)
+    return render(request, 'league/league_table.html', context)
 
 def team_detail(request, team_id):
     # Change query back to pk=team_id

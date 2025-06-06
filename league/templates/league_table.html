@@ -65,7 +65,6 @@
                             <th class="px-3 py-3 text-center">Pts</th>
                         </tr>
                     </thead>
-                    ...
                     <tbody class="divide-y divide-gray-700 text-gray-200">
                         {% for team_data in league_table %}
                         <tr class="{% if forloop.counter0|divisibleby:2 %}bg-gray-800{% else %}bg-gray-700{% endif %} hover:bg-gray-600 transition-colors duration-150 ease-in-out">
@@ -95,7 +94,6 @@
                         </tr>
                         {% endfor %}
                     </tbody>
-...
                 </table>
                 {% else %}
                 <p class="text-center text-gray-400 text-lg py-10">No teams or matches to display yet. Add some in the admin panel!</p>

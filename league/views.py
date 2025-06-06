@@ -93,7 +93,7 @@ def league_table(request):
         'league_table': sorted_table,
         'recent_fixtures': recent_fixtures,
     }
-    return render(request, 'league/league_table.html', context)
+    return render(request, 'league_table.html', context)
 
 def team_detail(request, team_id):
     # Change query back to pk=team_id

@@ -17,7 +17,7 @@ services:
       - key: DEBUG
         value: "False"
     disk:
-      - name: sqlite-data
+        name: sqlite-data
         mountPath: /var/data # Mount point for your persistent disk
 
 # NOTE: Render's free tier web services spin down after 15 mins of inactivity.

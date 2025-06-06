@@ -65,20 +65,21 @@
                             <th class="px-3 py-3 text-center">Pts</th>
                         </tr>
                     </thead>
+                    ...
                     <tbody class="divide-y divide-gray-700 text-gray-200">
                         {% for team_data in league_table %}
                         <tr class="{% if forloop.counter0|divisibleby:2 %}bg-gray-800{% else %}bg-gray-700{% endif %} hover:bg-gray-600 transition-colors duration-150 ease-in-out">
                             <td class="px-3 py-3 text-center font-bold
-                                {% if forloop.counter <= 4 %} text-blue-400
-                                {% elif forloop.counter == 5 %} text-orange-400
-                                {% elif forloop.counter >= 18 %} text-red-400
+                                {% if forloop.counter == 1 %} text-yellow-400 {% comment %} New: Champion spot color {% endcomment %}
+                                {% elif forloop.counter <= 4 %} text-blue-400 {% comment %} Existing: Champions League spots (2nd, 3rd, 4th) {% endcomment %}
+                                {% elif forloop.counter == 5 %} text-orange-400 {% comment %} Existing: Europa League spot {% endcomment %}
+                                {% elif forloop.counter >= 18 %} text-red-400 {% comment %} Existing: Relegation Zone {% endcomment %}
                                 {% endif %}">
                                 {{ forloop.counter }}
                             </td>
                             <td class="px-3 py-3 text-left font-semibold text-base whitespace-nowrap">
-                                {# Corrected: Use team_data.team_object.name for display #}
                                 <a href="{% url 'team_detail' team_data.team_object.id %}" class="text-blue-400 hover:text-blue-300 transition-colors duration-150">
-                                    {{ team_data.team_object.name }} {# <--- THIS IS THE CHANGE #}
+                                    {{ team_data.team_object.name }}
                                 </a>
                             </td>
                             <td class="px-3 py-3 text-center text-sm">{{ team_data.played }}</td>
@@ -94,6 +95,7 @@
                         </tr>
                         {% endfor %}
                     </tbody>
+...
                 </table>
                 {% else %}
                 <p class="text-center text-gray-400 text-lg py-10">No teams or matches to display yet. Add some in the admin panel!</p>
